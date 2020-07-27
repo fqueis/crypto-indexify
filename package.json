@@ -1,0 +1,26 @@
+{
+  "name": "crypto-indexify",
+  "version": "0.0.1",
+  "description": "An cryptocurrency index fund manager",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fqueis/crypto-indexify.git"
+  },
+  "author": "Felipe Queis <fqueis@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fqueis/crypto-indexify/issues"
+  },
+  "homepage": "https://github.com/fqueis/crypto-indexify#readme",
+  "dependencies": {
+    "coingecko-api": "^1.0.10",
+    "dotenv": "^8.2.0",
+    "lodash": "^4.17.19",
+    "moment": "^2.27.0",
+    "tulind": "^0.8.18"
+  }
+}
