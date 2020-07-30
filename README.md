@@ -1,5 +1,9 @@
-![status](https://img.shields.io/badge/status-In_Development-red?style=for-the-badge)
-![coverage](https://img.shields.io/badge/coverage-30%25-red?style=for-the-badge)
+![](https://img.shields.io/badge/status-In_Development-red?style=for-the-badge)
+![](https://img.shields.io/badge/coverage-30%25-red?style=for-the-badge)
+![](https://img.shields.io/github/package-json/v/fqueis/crypto-indexify?style=for-the-badge)
+![](https://img.shields.io/github/last-commit/fqueis/crypto-indexify?style=for-the-badge)
+[![@fqueis](https://img.shields.io/badge/Contact-%40fqueis-blue?style=for-the-badge)](https://t.me/fqueis)
+
 
 # Crypto Indexify :gem:
 
