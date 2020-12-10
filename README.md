@@ -1,6 +1,4 @@
 ![](https://img.shields.io/badge/status-In_Development-red?style=for-the-badge)
-![](https://img.shields.io/badge/coverage-30%25-red?style=for-the-badge)
-![](https://img.shields.io/github/package-json/v/fqueis/crypto-indexify?style=for-the-badge)
 ![](https://img.shields.io/github/last-commit/fqueis/crypto-indexify?style=for-the-badge)
 
 # Crypto Indexify :gem:
