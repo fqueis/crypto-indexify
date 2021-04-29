@@ -105,3 +105,4 @@ dist
 
 # Project specifics
 tests.js
+indexed/*.json
