@@ -11,6 +11,16 @@ There are thousands of crypto currencies in the market and can be difficult and 
 
 With an index fund you don't worry about deciding what, when and how much to invest in your crypto allowing you to not make any emotional based decisions.
 
+## Installation & Usage
+
+```
+git clone https://github.com/fqueis/crypto-indexify && cd crypto-indexify
+cp .env.example .env (customize with your own params)
+npm i && npm run start
+```
+
+<img src='http://g.recordit.co/XpD1CJThYJ.gif'>
+
 ## Samples results
 <details>
   <summary>04/28/2021 - Using 20 markets, a 5-day weighted moving average and excluding stable coins</summary>
@@ -429,13 +439,7 @@ With an index fund you don't worry about deciding what, when and how much to inv
   ```
 </details>
 
-## Installation
 
-```
-git clone https://github.com/fqueis/crypto-indexify && cd crypto-indexify
-cp .env.example .env (customize with your own params)
-npm i && npm run start
-```
 
 ## Development
 Want to contribute? Great! Feel free to send a pull request
