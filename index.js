@@ -2,60 +2,54 @@
 
 require('dotenv').config()
 
-const { mapValues, groupBy, last }  = require('lodash')
-const { asyncForEach }              = require('./utils/functions')
-const { ema }                       = require('./helpers/indicators')
-const coinGecko                     = require('coingecko-api')
-const moment                        = require('moment')
+const indicators    = require('./helpers/indicators')
+const functions     = require('./utils/functions')
+const geckoApi      = require('coingecko-api')
+const logger        = require('./utils/logger')
 
-const blackMarkets = process.env.BLACKLIST_MARKETS, maxMarkets = process.env.MAX_MARKETS, currency = process.env.CURRENCY.toLowerCase()
-
-let start = process.hrtime()
 const boot = async () => {
-    const geckoClient = new coinGecko()
+    const gecko = new geckoApi(), vs_currency = process.env.VS_CURRENCY.toLowerCase()
 
-    let markets = await geckoClient.coins.markets({ vs_currency: currency, order: coinGecko.ORDER.MARKET_CAP_DESC, per_page: maxMarkets + blackMarkets.length })
+    logger.info(`vs_currency setted to '${vs_currency}'`)
 
-    if (markets.success) {
-        const from = moment().subtract(process.env.EMA_PERIOD, 'day').startOf('day').unix(), to = moment().endOf('day').unix()
+    let indexify = []
+    await gecko.coins.markets({ order: geckoApi.ORDER.MARKET_CAP_DESC, vs_currency }).then(async ({ data }) => {
+        const markets = data.filter((d) => !process.env.EXCLUDED_MARKETS.includes(d.symbol)).map((m) => ({ id: m.id, name: m.name})).slice(0, process.env.TOTAL_MARKETS)
 
-        let filteredMarkets = markets.data.filter((m) => !blackMarkets.includes(m.symbol.toUpperCase())).slice(0, maxMarkets).map((m) => m.id)
+        logger.info(`Markets sucessfully fetched. Using a total of ${markets.length} markets`)
 
-        let topMarkets = []
-        await asyncForEach(filteredMarkets, async (id) => {
-            let range = await geckoClient.coins.fetchMarketChartRange(id, { vs_currency: currency, from, to })
+        await functions.asyncForEach(markets, async ({ id, name }) => {
+            const period = process.env.WMA_PERIOD
 
-            let mCapByDay   = mapValues(groupBy(range.data.market_caps, ([unix]) => moment(unix).startOf('day').format()), (cap) => last(cap)[1]),
-                mCapEma     = await ema(Object.values(mCapByDay))
+            logger.info(`Adjusting market cap of ${name} using a ${period}-day weighted moving average`)
+            await gecko.coins.fetchMarketChart(id, { vs_currency, days: period, interval: 'daily' }).then(async ({ data }) => {
+                const { market_caps } = data, mcap = market_caps.map((m) => m[1]), wma = await indicators.wma(mcap, period)
 
-            topMarkets.push({ id, marketCapEma: last(mCapEma) })
-        })
-
-        let totalMCap = topMarkets.reduce((acc, market) => acc + Math.sqrt(market.marketCapEma), 0)
-
-        let allocations = []
-        for (let index = 0; index < topMarkets.length; index++) {
-            const market = topMarkets[index];
-            
-            allocations.push({
-                'market': market.id,
-                'marketCap': market.marketCapEma,
-                "ratio": Math.sqrt(market.marketCapEma) / totalMCap
+                indexify.push({ name, mcap: { val: mcap[mcap.length - 1], wma: wma[wma.length - 1] } })
             })
-        }
-
-        allocations.sort((a, b) => (b.ratio > a.ratio) ? 1 : -1).forEach((allocation) => {
-            console.log(`${allocation.market} => ${allocation.ratio * 100}%`) 
         })
 
-        console.log(allocations.reduce((acc, alloc) => acc + (alloc.ratio * 100), 0))
+        logger.info(`All market caps adjusted... Indexing markets now`)
+    })
+
+    const ourMarketCap = indexify.reduce((p, c) => p + Math.sqrt(c.mcap.wma), 0)
+
+    let allocations = []
+    for (let idx = 0; idx < indexify.length; idx++) {
+        const { name:coin, mcap } = indexify[idx], adj = Math.sqrt(mcap.wma), ratio = (adj / ourMarketCap) * 100
+        
+        allocations.push({ coin, mcap, ratio })
     }
+
+    const file = `./indexed/${Date.now()}_${process.env.TOTAL_MARKETS}M_${process.env.WMA_PERIOD}DWMA.json`
+
+    functions.writeResults(file, allocations, (err) => {
+        const message = err ? `An error happened. Message: ${err.message}` : `Markets sucessfully indexed. Check ${file} to see the results`
+        
+        logger.info(message)
+
+        process.exit()
+    })
 }
 
-process.on('beforeExit', () => {
-    let end = process.hrtime(start)
-    
-    console.log(`${end[0]}s ${end[1] / 1000000}ms`)
-})
-
-boot().catch((err) => console.log(err))
+boot().catch(console.error)

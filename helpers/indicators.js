@@ -2,8 +2,12 @@
 
 const { indicators } = require('tulind')
 
-const ema = async (marketCap, period = process.env.EMA_PERIOD) => {
-    return new Promise((resolve, reject) => indicators.ema.indicator([marketCap], [period]).then((emaResults) => resolve(emaResults[0])).catch(reject))
+const ema = async (values, period = process.env.EMA_PERIOD) => {
+    return indicators.ema.indicator([values], [period]).then((results) => Promise.resolve(results[0])).catch(Promise.reject)
 }
 
-module.exports = { ema }
+const wma = async (values, period = process.env.WMA_PERIOD) => {
+    return indicators.wma.indicator([values], [period]).then((results) => Promise.resolve(results[0])).catch(Promise.reject)
+}
+
+module.exports = { ema, wma }
