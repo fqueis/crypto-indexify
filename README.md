@@ -433,6 +433,7 @@ With an index fund you don't worry about deciding what, when and how much to inv
 
 ```
 git clone https://github.com/fqueis/crypto-indexify && cd crypto-indexify
+cp .env.example .env (customize with your own params)
 npm i && npm run start
 ```
 
